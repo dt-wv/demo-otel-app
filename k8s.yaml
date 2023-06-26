@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-otel-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-app-deployment
+  namespace: demo-otel-app
+  labels:
+    app: otel-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-app
+  template:
+    metadata:
+      labels:
+        app: otel-app
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+    spec:
+      containers:
+      - name: otel-app
+        image: dtwver/demo-otel-app:v1
+        ports:
+        - containerPort: 3010
+          name: service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-app-service
+  namespace: demo-otel-app
+  labels:
+    app: otel-app
+spec:
+  ports:
+  - port: 3010
+    targetPort: 3010
+    name: service
+  selector:
+    app: otel-app
